@@ -3,9 +3,6 @@
 
 ## Demo
 https://ACGNTaiwan.github.io/Anime-List/
-
-## 資料格式
-
 ```jsonc
 {
     "name": "齊木楠雄的災..",             // 動畫名稱
@@ -20,11 +17,3 @@ https://ACGNTaiwan.github.io/Anime-List/
     "description": "在一個平凡的..."      // 介紹
 }
 ```
-
-### 原作載體格式 / Carrier 
-| Comic | Novel | Game | Original |
-| ----- | ----- | ---- | -------- |
-|  漫畫  |  小說 | 遊戲  | 原創或其他 |
-
-## 一起貢獻吧！
-若資料有誤或想提供資料，歡迎於此提交 PR。
