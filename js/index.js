@@ -1,11 +1,10 @@
 const activeDrawerItemClassName = 'mdui-color-theme-50 mdui-text-color-theme';
-const weekChinese = ["日", "一", "二", "三", "四", "五", "六"]
 const week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const carrierChinese = {
-    "Comic": "漫畫改編",
-    "Game": "遊戲改編",
-    "Novel": "小說改編",
-    "Original": "原創劇情",
+const carrier = {
+    "Comic": "Адаптации комиксов",
+    "Game": "Адаптация игры",
+    "Novel": "Адаптация романа",
+    "Original": "Оригинальный сюжет",
 }
 const carrierIcon = {
     "Comic": "edit",
@@ -15,9 +14,9 @@ const carrierIcon = {
 }
 const showDate = week.map((w, i) => ({
     id: w,
-    day: `週${weekChinese[i]}`
+    day: `День Недели ${week[i]}`
 }))
-const month2Season = month => ({ 1: '冬', 4: '春', 7: '夏', 10: '秋' }[month] || '新')
+const month2Season = month => ({ 1: 'Зима', 4: 'Весна', 7: 'Лето', 10: 'Осень' }[month] || 'Новый')
 const indexData = {
     2017: {
         7: "anime2017.07.json",
@@ -25,7 +24,6 @@ const indexData = {
     },
     2018: {
         1: "anime2018.01.json",
-        4: "anime2018.04.json",
         7: "anime2018.07.json",
         10: "anime2018.10.json"
     },
@@ -38,8 +36,7 @@ const indexData = {
     2020: {
         1: "anime2020.01.json",
         4: "anime2020.04.json",
-        7: "anime2020.07.json",
-        10: "anime2020.10.json"
+        7: "anime2020.07.json"
     },
     2021: {
         1: "anime2021.01.json",
@@ -48,9 +45,7 @@ const indexData = {
         10: "anime2021.10.json"
     },
     2022: {
-        1: "anime2022.01.json",
         4: "anime2022.04.json",
-        7: "anime2022.07.json"
     }
 };
 const bg = arrayShuffle([
@@ -98,7 +93,7 @@ $(function () {
     $("#drawer>.mdui-list").append(
         `<li class="mdui-list-item mdui-ripple" href="home" data-navigo>
             <i class="mdui-list-item-icon mdui-icon eva eva-home-outline"></i>
-            <div class="mdui-list-item-content">首頁</div>
+            <div class="mdui-list-item-content">Главная</div>
         </li>`
     )
     for (year of Object.keys(indexData).reverse()) {
@@ -107,13 +102,12 @@ $(function () {
                 `<li class="mdui-collapse-item" al-month="${year}-${month}">
                     <div class="mdui-collapse-item-header mdui-list-item mdui-ripple">
                         <i class="mdui-list-item-icon mdui-icon eva eva-archive-outline"></i>
-                        <div class="mdui-list-item-content">${year} ${month.length > 1 ? month : '0' + month} 月${month2Season(month)}番</div>
+                        <div class="mdui-list-item-content">${year} ${month.length > 1 ? month : '0' + month} ${month2Season(month)}</div>
                         <i class="mdui-collapse-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
                     </div>
                     <ul class="mdui-collapse-item-body mdui-list mdui-list-dense">
-                        <li class="mdui-list-item mdui-ripple" href="info/${year}/${month}" data-navigo>圖文介紹</li>
-                        <li class="mdui-list-item mdui-ripple" href="schedule/${year}/${month}" data-navigo>日程表</li>
-                        <li class="mdui-list-item mdui-ripple" href="waterfall/${year}/${month}" data-navigo>瀑布流</li>
+                        <li class="mdui-list-item mdui-ripple" href="info/${year}/${month}" data-navigo>Иллюстрации</li>
+                        <li class="mdui-list-item mdui-ripple" href="waterfall/${year}/${month}" data-navigo>Водопад</li>
                     </ul>
                 </li>`
             )
@@ -122,7 +116,7 @@ $(function () {
     }
 
     router.updatePageLinks()
-    mdui.mutation(); //地方的 MDUI 需要初始化
+    mdui.mutation(); //Необходимо инициализировать локальный MDUI
     // 手機自動收回 drawer
     $(`#drawer [href]`).click(function () {
         if ($(window).width() < 1024) {
@@ -163,15 +157,15 @@ function showHome() {
                 const bgImg = arrayShuffle((await loadJson("./anime-data/" + indexData[y][m])).map(i => i.img))[0]
                 $('#content .recent-update').append(
                     $(
-                        `<a class="card" title="${y} 年 ${m} 月${month2Season(m)}番" href="info/${y}/${m}" data-navigo>
+                        `<a class="card" title="${y} Год ${m} Месяц${month2Season(m)}" href="info/${y}/${m}" data-navigo>
                         <div class="image" style="background-image:url('${bgImg}')">
                             <div class="hover-icon hover-show">
                                 <i class="mdui-icon eva eva-arrow-ios-forward-outline"></i>
                             </div>
                         </div>
                         <div class="content">
-                            <div class="name mdui-text-color-theme">${m} 月${month2Season(m)}番</div>
-                            <div class="originalName">${y} 年</div>
+                            <div class="name mdui-text-color-theme">${m} Месяц ${month2Season(m)}</div>
+                            <div class="originalName">${y} Год</div>
                         </div>
                     </a>`
                     ).click(function () {
@@ -182,7 +176,7 @@ function showHome() {
         }
         router.updatePageLinks()
     }
-    hwHeader("Anime List", "使用左方選單來瀏覽本站資料", "點擊左上角選單鈕來瀏覽本站資料")
+    hwHeader("Anime List")
     $("#content").html(
         `<div class="recent-update"></div>`
     )
@@ -208,7 +202,7 @@ function showHome() {
             r += `</div>`
             $("[al-contributors]").html(r);
         }).catch(err => $("[al-contributors]").attr('class', '').html(
-            `<div class="mdui-typo">蹦蹦爆炸了，請稍後再試。<pre>錯誤原因：\n${err}</pre></div>`
+            `<div class="mdui-typo">Отскок взорвался, пожалуйста, повторите попытку позже.<pre>Причина ошибки:\n${err}</pre></div>`
         ))
 }
 
@@ -242,21 +236,18 @@ async function loadData({
         });
         $("#content").attr('class', '').html('')
         let typeChinsese = {
-            waterfall: "瀑布流",
-            info: "圖文介紹",
-            schedule: "日程表",
+            waterfall: "Водопад",
+            info: "Иллюстрации",
         }
-        hwHeader(`${year} 年 ${month} 月${month2Season(month)}番`, typeChinsese[type])
+        hwHeader(`${year} ${month} ${month2Season(month)}`, typeChinsese[type])
         switch (type) {
             case "waterfall":
                 return waterfall(sorted_anime, year)
             case "info":
                 return info(sorted_anime, year)
-            case "schedule":
-                return schedule(sorted_anime, year)
         }
     } catch (err) {
-        $("#content").attr('class', '').html(`<div class="mdui-typo">蹦蹦爆炸了，請稍後再試。<pre>錯誤原因：\n${err}</pre></div>`)
+        $("#content").attr('class', '').html(`<div class="mdui-typo">Отскок взорвался, пожалуйста, повторите попытку позже.<pre>Причина ошибки：\n${err}</pre></div>`)
     }
 }
 
@@ -294,67 +285,22 @@ function waterfall(Anime, year) {
     $("#content").append(container)
 }
 
-function schedule(Anime, year) {
-    $("#content").append(`<div class="schedule"></div>`)
-    for (day of showDate) {
-        $(`#content>.schedule`).append(
-            `<div class="mdui-list day" id="${day.id}">
-                <h3 class="al-header">${day.day}</h3>
-            </div>`
-        )
-    }
-    $(`#content>.schedule`).append(
-        `<div class="mdui-list day" id="unknown" al-time-unknown>
-            <h3 class="al-header">播出時間未知</h3>
-        </div>`
-    )
-    for (let item of Anime) {
-        let animeDay;
-        let time = `${item.date} ${item.time}`
-        if (item.date == "" || item.date.split("/")[1] == "") {
-            animeDay = 'unknown'
-            time = ''
-        } else {
-            let setTime = new Date((item.year || year) + "/" + item.date)
-            animeDay = week[setTime.getDay()]; //星期
-        }
-        $(`#${animeDay}`).append(function () {
-            return $(`<div class="mdui-list-item mdui-ripple">
-                <div class="mdui-list-item-content" title="${item.name}">
-                    <div class="mdui-list-item-title">${item.name}</div>
-                    <div class="mdui-list-item-text">${time}</div>
-                </div>
-            </div>`).click(function () {
-                showAnimeInfoDialog(item, year)
-            })
-        })
-    }
-    if ($("#unknown>*").length <= 1) {
-        $(`[al-time-unknown]`).remove()
-    }
-}
-
 function info(Anime, year) {
-    for (day of showDate) {
-        $(`#content`).append(
-            `<div id="${day.id}">
-            <div class="mdui-typo-display-1 al-header">${day.day}</div>
-            <div class="info"></div>
-            </div>`
-        )
-    }
+    $(`#content`).append(
+        `<div id="info" class="info"></div>`
+    )
     $(`#content`).append(
         `<div id="unknown">
-        <div class="mdui-typo-display-1 al-header" al-time-unknown>播出時間未知</div>
+        <div class="mdui-typo-display-1 al-header" al-time-unknown>Время выхода в эфир неизвестно</div>
         <div class="info" al-time-unknown></div>
         </div>`
     )
     for (let item of Anime) {
         let setTime = new Date((item.year || year) + "/" + item.date)
         let animeDay = week[setTime.getDay()]; //星期
-        let time = `${item.date}(${weekChinese[setTime.getDay()]}) ${item.time}`
-        if (item.date == "" || item.date.split("/")[1] == "") time = "", animeDay = 'unknown'
-        $(`#${animeDay}>.info`).append($(
+        let release = item.date
+        if (item.date == "" || item.date.split("/")[1] == "") release = "Дата выхода неизвестна", animeDay = 'unknown'
+        $(`#info`).append($(
             `<div class="card">
                 <div class="image" style="background-image:url('${item.img}')">
                     <div class="hover-icon hover-show">
@@ -364,7 +310,7 @@ function info(Anime, year) {
                 <div class="content">
                     <div class="name mdui-text-color-theme mdui-typo-title">${item.name}</div>
                     <div class="originalName">${item.originalName}</div>
-                    <div class="time">${time}</div>
+                    <div class="time">${release}</div>
                     <div class="description">${item.description}</div>
                 </div>
             </div>`
@@ -375,18 +321,21 @@ function info(Anime, year) {
 }
 
 function showAnimeInfoDialog(item, year) {
-    let animeId = md5((item.url || item.name) + '_S' + item.season)
-    let time = `${item.date}(${weekChinese[new Date((item.year || year) + "/" + item.date).getDay()]}) ${item.time}`
-    if (item.date.trim() === "" || !item.date) time = "播出時間未知"
-    // 動畫詳細資料清單
-    let displayItems = []
-    displayItems.push({ icon: 'access_time', title: '播出時間', content: time })
-    displayItems.push({ icon: 'label', title: '季數', content: item.season })
+    let release = item.date
+    if (item.date.trim() === "" || !item.date) release = "Дата выхода неизвестна"
+    let displayItems = [] // Список данных о анимации
+    displayItems.push({ icon: 'insert_invitation', title: 'Дата выхода', content: release})
+    if (!item.movie){
+        displayItems.push({ icon: 'access_time', title: 'Длительность серии', content: item.time + ' мин. ~ серия' })
+        displayItems.push({ icon: 'label', title: 'Сезон', content: item.season + '(' + item.series +'Серий)' })
+    }else{
+        displayItems.push({ icon: 'access_time', title: 'Длительность', content: item.time + ' мин.' })
+    }        
     if (item.carrier)
-        displayItems.push({ icon: carrierIcon[item.carrier], title: '原作載體', content: carrierChinese[item.carrier] })
-    displayItems.push({ icon: 'info', title: '簡介', content: item.description || '尚無簡介！' })
+        displayItems.push({ icon: carrierIcon[item.carrier], title: 'Тип', content: carrier[item.carrier] })
+    displayItems.push({ icon: 'info', title: 'Описание', content: item.description || 'Пока не представлено!' })
     if (item.official)
-        displayItems.push({ icon: 'public', title: '官網', content: item.official, href: item.official })
+        displayItems.push({ icon: 'public', title: 'Официальный сайт', content: item.official, href: item.official })
     let displayItemsResult = displayItems.map(({ href, title, content, icon }) =>
         `<a class="mdui-list-item mdui-ripple" ${href ? `href="${href}" target="_blank"` : ''}>
             <i class="mdui-list-item-icon mdui-icon material-icons mdui-text-color-indigo">${icon}</i>
@@ -402,8 +351,7 @@ function showAnimeInfoDialog(item, year) {
         <div class="anime-poster" style="background-image:url('${item.img}')"><img src="${item.img}"/></div>
         <div class="anime-info-container">
             <div class="mdui-tab mdui-tab-full-width" mdui-tab>
-                <a href="#anime-tab-info" class="mdui-ripple">簡介</a>
-                <a href="#anime-tab-comment" class="mdui-ripple">留言板</a>
+                <a href="#anime-tab-info" class="mdui-ripple">Введение</a>
             </div>
             <div id="anime-tab-info" class="mdui-p-a-2">
                 <div class="anime-info">
@@ -414,11 +362,8 @@ function showAnimeInfoDialog(item, year) {
                     </div>
                 </div>
             </div>
-            <div id="anime-tab-comment" class="mdui-p-a-2">
-
-            </div>
             <div class="anime-actions" style="padding: 16px">
-                <button class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple" mdui-dialog-close>關閉</button>
+                <button class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple" mdui-dialog-close>Закрыть</button>
             </div>
         </div>
     </div>`
@@ -433,7 +378,6 @@ function showAnimeInfoDialog(item, year) {
         onClose: () => router.pause(false)
     });
     mdui.mutation()
-    $("#anime-tab-comment").html(`<script async src="https://comments.app/js/widget.js?3" data-comments-app-website="lUO82nuW" data-limit="20" data-page-id="${animeId}" data-outlined="1" data-colorful="1" data-height="450"></script>`)
 }
 
 /**
