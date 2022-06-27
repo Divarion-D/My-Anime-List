@@ -152,7 +152,7 @@ function showHome() {
         loop: for (year of Object.keys(indexData).reverse()) {
             const y = year;
             for (month of Object.keys(indexData[y]).reverse()) {
-                if (++count > 4) break loop;
+                if (++count > 16) break loop;
                 const m = month
                 const bgImg = arrayShuffle((await loadJson("./anime-data/" + indexData[y][m])).map(i => i.img))[0]
                 $('#content .recent-update').append(
@@ -311,7 +311,7 @@ function info(Anime, year) {
                     <div class="name mdui-text-color-theme mdui-typo-title">${item.name}</div>
                     <div class="originalName">${item.originalName}</div>
                     <div class="time">${release}</div>
-                    <div class="description">${item.description}</div>
+                    <div class="description">${trimText(item.description)}</div>
                 </div>
             </div>`
         ).click(function () { showAnimeInfoDialog(item, year) }))
@@ -378,6 +378,20 @@ function showAnimeInfoDialog(item, year) {
         onClose: () => router.pause(false)
     });
     mdui.mutation()
+}
+
+// Text slicing up to 120 characters with an ending on the whole word
+function trimText(text) {
+    if (text.length > 120) {
+        let textArr = text.split(" ")
+        let result = ""
+        for (let i = 0; i < textArr.length; i++) {
+            if (result.length + textArr[i].length > 120) break
+            result += textArr[i] + " "
+        }
+        return result + "..."
+    }
+    return text
 }
 
 /**
