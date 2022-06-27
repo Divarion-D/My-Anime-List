@@ -232,7 +232,6 @@ body:not(.firefox) .mdui-dialog-content {
 }
 .waterfall .card {
   margin-bottom: 8px;
-  display: block;
   position: relative;
   -webkit-column-break-inside: avoid;
      -moz-column-break-inside: avoid;
