@@ -61,13 +61,13 @@ router
     .resolve()
 router
     .hooks({
-        before: (done, params) => {
+        before: (done) => {
             $("#content").attr('class', '').html('')
             $("#drawer>.mdui-list *").removeClass(activeDrawerItemClassName)
             $(`[href="${router.lastRouteResolved().url}"]`).addClass(activeDrawerItemClassName)
             done()
         },
-        after: params => {
+        after: () => {
             $('html, body').scrollTop(0)
         }
     })
@@ -159,29 +159,6 @@ function showHome() {
         `<div class="recent-update"></div>`
     )
     appendRecentUpdate()
-    fetch("https://api.github.com/repos/ACGNTaiwan/Anime-List/contributors")
-        .then(res => res.json())
-        .then(data => {
-            let r = `<div class="contributors">`
-            for (user of data) {
-                if (user.login == 'invalid-email-address') continue
-                r += `<a class="card" href="${user.html_url}" title="${user.login}" target="_blank">
-                <div class="image" style="background-image:url('${user.avatar_url}')">
-                    <div class="hover-icon hover-show">
-                        <i class="mdui-icon eva eva-github-outline"></i>
-                    </div>
-                </div>
-                <div class="content">
-                    <div class="name mdui-text-color-theme">${user.login}</div>
-                    <div class="originalName">${user.contributions} commits</div>
-                </div>
-            </a>`
-            }
-            r += `</div>`
-            $("[al-contributors]").html(r);
-        }).catch(err => $("[al-contributors]").attr('class', '').html(
-            `<div class="mdui-typo">Отскок взорвался, пожалуйста, повторите попытку позже.<pre>Причина ошибки:\n${err}</pre></div>`
-        ))
 }
 
 async function loadData({
