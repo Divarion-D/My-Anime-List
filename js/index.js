@@ -12,41 +12,26 @@ const carrierIcon = {
     "Novel": "book",
     "Original": "tv",
 }
-const showDate = week.map((w, i) => ({
-    id: w,
-    day: `День Недели ${week[i]}`
-}))
-const month2Season = month => ({ 1: 'Зима', 4: 'Весна', 7: 'Лето', 10: 'Осень' }[month] || 'Новый')
 const indexData = {
-    2017: {
-        7: "anime2017.07.json",
-        10: "anime2017.10.json"
-    },
-    2018: {
-        1: "anime2018.01.json",
-        7: "anime2018.07.json",
-        10: "anime2018.10.json"
-    },
-    2019: {
-        1: "anime2019.01.json",
-        4: "anime2019.04.json",
-        7: "anime2019.07.json",
-        10: "anime2019.10.json"
-    },
-    2020: {
-        1: "anime2020.01.json",
-        4: "anime2020.04.json",
-        7: "anime2020.07.json"
-    },
-    2021: {
-        1: "anime2021.01.json",
-        4: "anime2021.04.json",
-        7: "anime2021.07.json",
-        10: "anime2021.10.json"
-    },
-    2022: {
-        4: "anime2022.04.json",
-    }
+    1988: "anime1988.json",
+    1995: "anime1995.json",
+    2001: "anime2001.json",
+    2003: "anime2003.json",
+    2004: "anime2004.json",
+    2006: "anime2006.json",
+    2008: "anime2008.json",
+    2010: "anime2010.json",
+    2011: "anime2011.json",
+    2012: "anime2012.json",
+    2014: "anime2014.json",
+    2015: "anime2015.json",
+    2016: "anime2016.json",
+    2017: "anime2017.json",
+    2018: "anime2018.json",
+    2019: "anime2019.json",
+    2020: "anime2020.json",
+    2021: "anime2021.json",
+    2022: "anime2022.json",
 };
 const bg = arrayShuffle([
     'https://cdn.discordapp.com/attachments/439314137584107532/728258277938561056/E382ADE383BCE38393E382B8E383A5E382A2E383AB.png',
@@ -66,11 +51,10 @@ const bg = arrayShuffle([
 const router = new Navigo('./', true, '#/');
 router
     .on({
-        ':type/:year/:month/': params => loadData({
-            js: "./anime-data/" + indexData[params.year][params.month],
+        ':type/:year/': params => loadData({
+            js: "./anime-data/" + indexData[params.year],
             type: params.type,
-            year: params.year,
-            month: params.month
+            year: params.year
         }),
         '*': showHome
     })
@@ -97,22 +81,20 @@ $(function () {
         </li>`
     )
     for (year of Object.keys(indexData).reverse()) {
-        for (month of Object.keys(indexData[year]).reverse()) {
-            let html = $(
-                `<li class="mdui-collapse-item" al-month="${year}-${month}">
-                    <div class="mdui-collapse-item-header mdui-list-item mdui-ripple">
-                        <i class="mdui-list-item-icon mdui-icon eva eva-archive-outline"></i>
-                        <div class="mdui-list-item-content">${year} ${month.length > 1 ? month : '0' + month} ${month2Season(month)}</div>
-                        <i class="mdui-collapse-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
-                    </div>
-                    <ul class="mdui-collapse-item-body mdui-list mdui-list-dense">
-                        <li class="mdui-list-item mdui-ripple" href="info/${year}/${month}" data-navigo>Иллюстрации</li>
-                        <li class="mdui-list-item mdui-ripple" href="waterfall/${year}/${month}" data-navigo>Водопад</li>
-                    </ul>
-                </li>`
-            )
-            $("#drawer>.mdui-list").append(html)
-        }
+        let html = $(
+            `<li class="mdui-collapse-item" al-month="${year}">
+                <div class="mdui-collapse-item-header mdui-list-item mdui-ripple">
+                    <i class="mdui-list-item-icon mdui-icon eva eva-archive-outline"></i>
+                    <div class="mdui-list-item-content">${year}</div>
+                    <i class="mdui-collapse-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
+                </div>
+                <ul class="mdui-collapse-item-body mdui-list mdui-list-dense">
+                    <li class="mdui-list-item mdui-ripple" href="info/${year}" data-navigo>Иллюстрации</li>
+                    <li class="mdui-list-item mdui-ripple" href="waterfall/${year}" data-navigo>Водопад</li>
+                </ul>
+            </li>`
+        )
+        $("#drawer>.mdui-list").append(html)
     }
 
     router.updatePageLinks()
@@ -128,7 +110,7 @@ $(function () {
     let p = router.lastRouteResolved().params
     let u = router.lastRouteResolved().url
     drawer = new mdui.Collapse("#drawer>.mdui-list", { accordion: true })
-    drawer.open(p ? `[al-month="${p.year}-${p.month}"]` : 0); //第一個讓他蹦出來
+    drawer.open(p ? `[al-month="${p.year}"]` : 0); //第一個讓他蹦出來
     $(p ? `[href="${u}"]` : `[href="home"][data-navigo]`).addClass(activeDrawerItemClassName)
     // 隨機背景圖
     hwBackground(bg[0])
@@ -151,28 +133,24 @@ function showHome() {
         let count = 0
         loop: for (year of Object.keys(indexData).reverse()) {
             const y = year;
-            for (month of Object.keys(indexData[y]).reverse()) {
-                if (++count > 16) break loop;
-                const m = month
-                const bgImg = arrayShuffle((await loadJson("./anime-data/" + indexData[y][m])).map(i => i.img))[0]
-                $('#content .recent-update').append(
-                    $(
-                        `<a class="card" title="${y} Год ${m} Месяц${month2Season(m)}" href="info/${y}/${m}" data-navigo>
-                        <div class="image" style="background-image:url('${bgImg}')">
-                            <div class="hover-icon hover-show">
-                                <i class="mdui-icon eva eva-arrow-ios-forward-outline"></i>
-                            </div>
+            if (++count > 12) break loop;
+            const bgImg = arrayShuffle((await loadJson("./anime-data/" + indexData[y])).map(i => i.img))[0]
+            $('#content .recent-update').append(
+                $(
+                    `<a class="card" title="${y} Год" href="info/${y}" data-navigo>
+                    <div class="image" style="background-image:url('${bgImg}')">
+                        <div class="hover-icon hover-show">
+                            <i class="mdui-icon eva eva-arrow-ios-forward-outline"></i>
                         </div>
-                        <div class="content">
-                            <div class="name mdui-text-color-theme">${m} Месяц ${month2Season(m)}</div>
-                            <div class="originalName">${y} Год</div>
-                        </div>
-                    </a>`
-                    ).click(function () {
-                        drawer.open(`[al-month="${y}-${m}"]`);
-                    })
-                )
-            }
+                    </div>
+                    <div class="content">
+                        <div class="originalName">${y} Год</div>
+                    </div>
+                </a>`
+                ).click(function () {
+                    drawer.open(`[al-month="${y}"]`);
+                })
+            )
         }
         router.updatePageLinks()
     }
@@ -209,8 +187,7 @@ function showHome() {
 async function loadData({
     js,
     type,
-    year,
-    month
+    year
 }) {
     try {
         // 讓動畫按時間排序
@@ -239,7 +216,7 @@ async function loadData({
             waterfall: "Водопад",
             info: "Иллюстрации",
         }
-        hwHeader(`${year} ${month} ${month2Season(month)}`, typeChinsese[type])
+        hwHeader(`${year} Год выпуска`, typeChinsese[type])
         switch (type) {
             case "waterfall":
                 return waterfall(sorted_anime, year)
@@ -252,16 +229,7 @@ async function loadData({
 }
 
 async function loadJson(js) {
-    let anime_data
-    if (sessionStorage["anime_data_" + js]) {
-        anime_data = JSON.parse(sessionStorage["anime_data_" + js]).data
-    } else {
-        anime_data = await fetch(js).then(res => res.json())
-        sessionStorage["anime_data_" + js] = JSON.stringify({
-            data: anime_data,
-            updatedTime: new Date()
-        })
-    }
+    anime_data = await fetch(js).then(res => res.json())
     return anime_data
 }
 
@@ -322,20 +290,23 @@ function info(Anime, year) {
 
 function showAnimeInfoDialog(item, year) {
     let release = item.date
+    if (item.season == "0") {
+        season = "OVA"
+    }else{
+        season = item.season
+    }
     if (item.date.trim() === "" || !item.date) release = "Дата выхода неизвестна"
     let displayItems = [] // Список данных о анимации
     displayItems.push({ icon: 'insert_invitation', title: 'Дата выхода', content: release})
     if (!item.movie){
         displayItems.push({ icon: 'access_time', title: 'Длительность серии', content: item.time + ' мин. ~ серия' })
-        displayItems.push({ icon: 'label', title: 'Сезон', content: item.season + '(' + item.series +'Серий)' })
+        displayItems.push({ icon: 'label', title: 'Сезон', content: season + ' (' + item.series + ' Серий)' })
     }else{
         displayItems.push({ icon: 'access_time', title: 'Длительность', content: item.time + ' мин.' })
     }        
     if (item.carrier)
         displayItems.push({ icon: carrierIcon[item.carrier], title: 'Тип', content: carrier[item.carrier] })
     displayItems.push({ icon: 'info', title: 'Описание', content: item.description || 'Пока не представлено!' })
-    if (item.official)
-        displayItems.push({ icon: 'public', title: 'Официальный сайт', content: item.official, href: item.official })
     let displayItemsResult = displayItems.map(({ href, title, content, icon }) =>
         `<a class="mdui-list-item mdui-ripple" ${href ? `href="${href}" target="_blank"` : ''}>
             <i class="mdui-list-item-icon mdui-icon material-icons mdui-text-color-indigo">${icon}</i>
