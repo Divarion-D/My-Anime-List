@@ -61,18 +61,6 @@ router
         '*' : showHome
     })
     .resolve()
-router
-    .hooks({
-        before: (done, params) => {
-            $("#content").attr('class', '').html('')
-            $("#drawer>.mdui-list *").removeClass(activeDrawerItemClassName)
-            $(`[href="${router.lastRouteResolved().url}"]`).addClass(activeDrawerItemClassName)
-            done()
-        },
-        after: params => {
-            $('html, body').scrollTop(0)
-        }
-    })
 let drawer;
 $(function () {
     if (typeof InstallTrigger !== 'undefined') $("body").addClass("firefox")
