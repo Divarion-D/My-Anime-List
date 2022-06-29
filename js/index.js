@@ -58,14 +58,16 @@ router
                 year: data.year
             })
         },
-        '*' : showHome
+        '*' : ({url}) => {
+            showHome(url)
+        }
     })
     .resolve()
 let drawer;
 $(function () {
     if (typeof InstallTrigger !== 'undefined') $("body").addClass("firefox")
     $("#drawer>.mdui-list").append(
-        `<li class="mdui-list-item mdui-ripple" href="/" data-navigo>
+        `<li class="mdui-list-item mdui-ripple" href="home" data-navigo>
             <i class="mdui-list-item-icon mdui-icon eva eva-home-outline"></i>
             <div class="mdui-list-item-content">Главная</div>
         </li>`
@@ -96,12 +98,14 @@ $(function () {
             $(".mdui-overlay").click()
         }
     });
-    // p == null => На первой странице
-    let p = ""
-    let u = window.location.host;
+    // y == null => На первой странице
+    let u = router.lastResolved()[0].url;
+    // get year from url
+    let y = u.split("/")[1];
+
     drawer = new mdui.Collapse("#drawer>.mdui-list", { accordion: true })
-    drawer.open(p ? `[al-month="${p.year}"]` : 0); //Первым выскочил он
-    $(p ? `[href="${u}"]` : `[href="home"][data-navigo]`).addClass(activeDrawerItemClassName)
+    drawer.open(y ? `[al-month="${y}"]` : 0); //Первым выскочил он
+    $(y ? `[href="${u}"]` : `[href="home"][data-navigo]`).addClass(activeDrawerItemClassName)
     // 隨機背景圖
     hwBackground(bg[0])
 
@@ -118,7 +122,10 @@ function hwBackground(url) {
     $(`#hw-bg`).attr('style', `background-image: url("${url}")`)
 }
 
-function showHome() {
+function showHome(url) {
+    $("#drawer>.mdui-list *").removeClass(activeDrawerItemClassName)
+    $(`[href="${url}"]`).addClass(activeDrawerItemClassName)
+
     async function appendRecentUpdate() {
         let count = 0
         loop: for (year of Object.keys(indexData).reverse()) {
