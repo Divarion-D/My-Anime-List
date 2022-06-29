@@ -48,26 +48,28 @@ const bg = arrayShuffle([
     'https://cdn.discordapp.com/attachments/439314137584107532/961445202109804614/FKqIc_pVUAkuvh4.jpg'
 ])
 // 路由
-const router = new Navigo('./', true, '#/');
+const router = new Navigo('/', { hash: true });
 router
     .on({
-        ':type/:year/': params => loadData({
-            js: "./anime-data/" + indexData[params.year],
-            type: params.type,
-            year: params.year
-        }),
-        '*': showHome
+        ':type/:year': ({ data }) => {
+            loadData({
+                js: "./anime-data/" + indexData[data.year],
+                type: data.type,
+                year: data.year
+            })
+        },
+        '*' : showHome
     })
     .resolve()
 router
     .hooks({
-        before: (done) => {
+        before: (done, params) => {
             $("#content").attr('class', '').html('')
             $("#drawer>.mdui-list *").removeClass(activeDrawerItemClassName)
             $(`[href="${router.lastRouteResolved().url}"]`).addClass(activeDrawerItemClassName)
             done()
         },
-        after: () => {
+        after: params => {
             $('html, body').scrollTop(0)
         }
     })
@@ -75,7 +77,7 @@ let drawer;
 $(function () {
     if (typeof InstallTrigger !== 'undefined') $("body").addClass("firefox")
     $("#drawer>.mdui-list").append(
-        `<li class="mdui-list-item mdui-ripple" href="home" data-navigo>
+        `<li class="mdui-list-item mdui-ripple" href="/" data-navigo>
             <i class="mdui-list-item-icon mdui-icon eva eva-home-outline"></i>
             <div class="mdui-list-item-content">Главная</div>
         </li>`
@@ -106,11 +108,11 @@ $(function () {
             $(".mdui-overlay").click()
         }
     });
-    // p == null => 在首頁
-    let p = router.lastRouteResolved().params
-    let u = router.lastRouteResolved().url
+    // p == null => На первой странице
+    let p = ""
+    let u = window.location.host;
     drawer = new mdui.Collapse("#drawer>.mdui-list", { accordion: true })
-    drawer.open(p ? `[al-month="${p.year}"]` : 0); //第一個讓他蹦出來
+    drawer.open(p ? `[al-month="${p.year}"]` : 0); //Первым выскочил он
     $(p ? `[href="${u}"]` : `[href="home"][data-navigo]`).addClass(activeDrawerItemClassName)
     // 隨機背景圖
     hwBackground(bg[0])
@@ -315,7 +317,7 @@ function showAnimeInfoDialog(item, year) {
             </div>
         </div>
     </div>`
-    router.pause()
+    //router.pause()
     mdui.dialog({
         //title: animeName,
         content: animeDialogContent,
@@ -323,7 +325,7 @@ function showAnimeInfoDialog(item, year) {
         /* buttons: [{
              text: '關閉'
          }],*/
-        onClose: () => router.pause(false)
+        //onClose: () => router.pause(false)
     });
     mdui.mutation()
 }
