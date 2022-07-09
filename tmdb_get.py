@@ -4,7 +4,7 @@ import json
 import time
 import os
 tmdb = TMDb()
-tmdb.api_key = 'f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8'
+tmdb.api_key = ''
 
 tmdb.language = 'ru'
 
