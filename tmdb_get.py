@@ -24,13 +24,8 @@ while True:
 
     for translate in parse.translations.translations:
         if translate.name == 'English':
-            if type == '0':
-                orig_name = translate.data.title
-                break
-            else:
-                orig_name = translate.data.name
-                break
-
+            orig_name = translate.data.title if type == '0' else translate.data.name
+            break
     if type == '0':
         ty_res = time.gmtime(parse.runtime*60)
         time_m = time.strftime("%H:%M:%S",ty_res)
@@ -40,9 +35,10 @@ while True:
             "date": parse.release_date,
             "time": str(time_m),
             "movie": "1",
-            "img": 'https://image.tmdb.org/t/p/w300' + parse.poster_path,
-            "description": parse.overview
-            }
+            "img": f'https://image.tmdb.org/t/p/w300{parse.poster_path}',
+            "description": parse.overview,
+        }
+
     else:
         for seasons in parse.seasons:
             if seasons.season_number == int(season):
@@ -58,29 +54,26 @@ while True:
             "time": str(parse.episode_run_time[0]),
             "season": str(season),
             "series": str(series),
-            "img": 'https://image.tmdb.org/t/p/w300' + poster,
-            "description": parse.overview
-            }
+            "img": f'https://image.tmdb.org/t/p/w300{poster}',
+            "description": parse.overview,
+        }
+
 
     year = data['date'][:4]
     #check if file exists
-    if os.path.exists('anime-data/anime' + year + '.json'):
+    if os.path.exists(f'anime-data/anime{year}.json'):
         # create json array with data
-        with open('anime-data/anime' + year + '.json', 'r') as f:
+        with open(f'anime-data/anime{year}.json', 'r') as f:
             data_json = json.load(f)
             data_json.append(data)
-            f.close()
-        # write json array to file
-        with open('anime-data/anime' + year + '.json', 'w') as f:
-            json.dump(data_json, f, ensure_ascii = False, indent=4)
             f.close()
     else:
         # create json array with data
         data_json = [data]
         # write json array to file
-        with open('anime-data/anime' + year + '.json', 'w') as f:
-            json.dump(data_json, f, ensure_ascii = False, indent=4)
-            f.close()
+    with open(f'anime-data/anime{year}.json', 'w') as f:
+        json.dump(data_json, f, ensure_ascii = False, indent=4)
+        f.close()
 
 
 
