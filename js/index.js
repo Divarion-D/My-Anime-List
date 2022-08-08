@@ -58,7 +58,7 @@ router
                 year: data.year
             })
         },
-        '*' : ({url}) => {
+        '*': ({ url }) => {
             showHome(url)
         }
     })
@@ -266,18 +266,18 @@ function showAnimeInfoDialog(item, year) {
     let release = item.date
     if (item.season == "0") {
         season = "OVA"
-    }else{
+    } else {
         season = item.season
     }
     if (item.date.trim() === "" || !item.date) release = "Дата выхода неизвестна"
     let displayItems = [] // Список данных о анимации
-    displayItems.push({ icon: 'insert_invitation', title: 'Дата выхода', content: release})
-    if (!item.movie){
+    displayItems.push({ icon: 'insert_invitation', title: 'Дата выхода', content: release })
+    if (!item.movie) {
         displayItems.push({ icon: 'access_time', title: 'Длительность серии', content: item.time + ' мин. ~ серия' })
         displayItems.push({ icon: 'label', title: 'Сезон', content: season + ' (' + item.series + ' Серий)' })
-    }else{
+    } else {
         displayItems.push({ icon: 'access_time', title: 'Длительность', content: item.time + ' мин.' })
-    }        
+    }
     if (item.carrier)
         displayItems.push({ icon: carrierIcon[item.carrier], title: 'Тип', content: carrier[item.carrier] })
     displayItems.push({ icon: 'info', title: 'Описание', content: item.description || 'Пока не представлено!' })
