@@ -3,6 +3,7 @@ import requests
 import json
 import time
 import os
+import regex as re
 
 # Shikimori API
 # https://shikimori.one/api/doc/1.0
@@ -20,6 +21,8 @@ for i in data:
     anime = requests.get(f"https://shikimori.one/api/animes/{i.get('anime').get('id')}", headers=header)
     anime = json.loads(anime.text)
     desc = '' if anime.get('description') is None else anime.get('description')
+    # remove [*] from description
+    desc = re.sub(r'\[.*?\]', '', desc)
 
     if anime.get('kind') == 'movie':
         ty_res = time.gmtime(anime.get('duration')*60)
