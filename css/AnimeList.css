@@ -312,7 +312,7 @@ body:not(.firefox) .mdui-dialog-content {
 }
 
 .recent-update {
-  --column-count: 4;
+  --column-count: 6;
 }
 
 @media (max-width: 1450px) {

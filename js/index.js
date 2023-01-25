@@ -74,16 +74,9 @@ $(function () {
     )
     for (year of Object.keys(indexData).reverse()) {
         let html = $(
-            `<li class="mdui-collapse-item" al-month="${year}">
-                <div class="mdui-collapse-item-header mdui-list-item mdui-ripple">
-                    <i class="mdui-list-item-icon mdui-icon eva eva-archive-outline"></i>
-                    <div class="mdui-list-item-content">${year}</div>
-                    <i class="mdui-collapse-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
-                </div>
-                <ul class="mdui-collapse-item-body mdui-list mdui-list-dense">
-                    <li class="mdui-list-item mdui-ripple" href="info/${year}" data-navigo>Иллюстрации</li>
-                    <li class="mdui-list-item mdui-ripple" href="waterfall/${year}" data-navigo>Водопад</li>
-                </ul>
+            `<li class="mdui-list-item mdui-ripple" href="info/${year}" al-month="${year}" data-navigo>
+                <i class="mdui-list-item-icon mdui-icon eva eva-archive-outline"></i>
+                <div class="mdui-list-item-content">${year}</div>
             </li>`
         )
         $("#drawer>.mdui-list").append(html)
@@ -151,7 +144,7 @@ function showHome(url) {
         }
         router.updatePageLinks()
     }
-    hwHeader("Anime List")
+    hwHeader("Главная страница")
     $("#content").html(
         `<div class="recent-update"></div>`
     )
@@ -186,17 +179,9 @@ async function loadData({
                 return aTime - bTime;
         });
         $("#content").attr('class', '').html('')
-        let typeChinsese = {
-            waterfall: "Водопад",
-            info: "Иллюстрации",
-        }
-        hwHeader(`${year} Год выпуска`, typeChinsese[type])
-        switch (type) {
-            case "waterfall":
-                return waterfall(sorted_anime, year)
-            case "info":
-                return info(sorted_anime, year)
-        }
+        hwHeader(`${year} Год выпуска`)
+        return info(sorted_anime, year)
+
     } catch (err) {
         $("#content").attr('class', '').html(`<div class="mdui-typo">Отскок взорвался, пожалуйста, повторите попытку позже.<pre>Причина ошибки：\n${err}</pre></div>`)
     }
@@ -205,26 +190,6 @@ async function loadData({
 async function loadJson(js) {
     anime_data = await fetch(js).then(res => res.json())
     return anime_data
-}
-
-function waterfall(Anime, year) {
-    let container = $('<div class="waterfall"></div>')
-    for (let item of Anime) {
-        $(container).append(
-            $(`<div class="card">
-                <div class="image mdui-ripple mdui-ripple-white">
-                    <img src="${item.img}"/>
-                </div>
-                <div class="content">
-                    <div class="name mdui-typo-title mdui-text-color-theme">${item.name}</div>
-                    <div class="originalName">${item.originalName}</div>
-                </div>
-            </div>`).click(function () {
-                showAnimeInfoDialog(item, year)
-            })
-        )
-    }
-    $("#content").append(container)
 }
 
 function info(Anime, year) {
