@@ -83,23 +83,23 @@ $(function () {
     }
 
     router.updatePageLinks()
-    mdui.mutation(); //Необходимо инициализировать локальный MDUI
-    // 手機自動收回 drawer
-    $(`#drawer [href]`).click(function () {
-        if ($(window).width() < 1024) {
-            new mdui.Drawer("#drawer").close();
-            $(".mdui-overlay").click()
-        }
-    });
-    // y == null => На первой странице
-    let u = router.lastResolved()[0].url;
-    // get year from url
-    let y = u.split("/")[1];
+    // mdui.mutation(); //Необходимо инициализировать локальный MDUI
+    // // 手機自動收回 drawer
+    // $(`#drawer [href]`).click(function () {
+    //     if ($(window).width() < 1024) {
+    //         new mdui.Drawer("#drawer").close();
+    //         $(".mdui-overlay").click()
+    //     }
+    // });
+    // // y == null => На первой странице
+    // let u = router.lastResolved()[0].url;
+    // // get year from url
+    // let y = u.split("/")[1];
 
-    drawer = new mdui.Collapse("#drawer>.mdui-list", { accordion: true })
-    drawer.open(y ? `[al-month="${y}"]` : 0); //Первым выскочил он
-    $(y ? `[href="${u}"]` : `[href="home"][data-navigo]`).addClass(activeDrawerItemClassName)
-    // 隨機背景圖
+    // drawer = new mdui.Collapse("#drawer>.mdui-list", { accordion: true })
+    // drawer.open(y ? `[al-month="${y}"]` : 0); //Первым выскочил он
+    // $(y ? `[href="${u}"]` : `[href="home"][data-navigo]`).addClass(activeDrawerItemClassName)
+    // // 隨機背景圖
     hwBackground(bg[0])
 
 });
@@ -322,6 +322,7 @@ function trimText(text) {
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 function arrayShuffle(array) {
+
     if (!Array.isArray(array)) {
         throw new TypeError(`Expected an array, got ${typeof array}`);
     }
