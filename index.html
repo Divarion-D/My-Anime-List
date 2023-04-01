@@ -1,53 +1,59 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>My Anime List</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta charset="utf-8">
-        <meta name="description" content="Показать мой аниме лист">
-        <meta name="image" content="https://github.com/Divarion-D/My-Anime-List/og.png">
-        <meta itemprop="name" content="Anime List">
-        <meta itemprop="description" content="Показать мой аниме лист">
-        <meta itemprop="image" content="https://github.com/Divarion-D/My-Anime-List/og.png">
-        <meta name="twitter:card" content="summary">
-        <meta name="twitter:title" content="Anime List">
-        <meta name="twitter:description" content="Показать мой аниме лист">
-        <meta name="twitter:image:src" content="https://github.com/Divarion-D/My-Anime-List/og.png">
-        <meta name="og:title" content="Anime List">
-        <meta name="og:description" content="Показать мой аниме лист">
-        <meta name="og:image" content="https://github.com/Divarion-D/My-Anime-List/og.png">
-        <meta name="og:url" content="https://github.com/Divarion-D/My-Anime-List">
-        <meta name="og:site_name" content="Anime List">
-        <meta name="og:locale" content="ru">
-        <meta name="og:type" content="website">
-    <link href="//cdn.jsdelivr.net/npm/mdui@1.0.2/dist/css/mdui.min.css" rel="stylesheet">
-    <link href="//unpkg.com/eva-icons@1.1.0/style/eva-icons.css" rel="stylesheet">
-    <link href="//fonts.googleapis.com/css?family=Product+Sans&amp;display=swap" rel="stylesheet">
-    <link href="./css/AnimeList.css?997" rel="stylesheet">
-    <meta name="theme-color" content="#e6f2fd">
-    <link rel="icon" href="./icon/icon.png">
-  </head>
-  <body class="mdui-drawer-body-left mdui-theme-primary-indigo mdui-theme-accent-indigo">
-    <header class="mdui-appbar-fixed mdui-appbar">
-      <div class="mdui-toolbar"><a class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white" mdui-drawer="{target: '#drawer', swipe: true}"><i class="mdui-icon material-icons">menu</i></a>
-        <div class="mdui-typo-title">My Anime List</div>
-        <div class="mdui-toolbar-spacer"></div><a class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white" href="https://github.com/Divarion-D/My-Anime-List" target="_blank" mdui-tooltip="{content:'Github'}"><i class="mdui-icon eva eva-github-outline"></i></a>
-      </div>
-    </header>
-    <div class="mdui-drawer mdui-appbar-with-toolbar" id="drawer">
-      <ul class="mdui-list"></ul>
+
+<head>
+  <title>My Anime List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta charset="utf-8">
+  <meta name="description" content="Показать мой аниме лист">
+  <meta name="image" content="https://github.com/Divarion-D/My-Anime-List/og.png">
+  <meta itemprop="name" content="Anime List">
+  <meta itemprop="description" content="Показать мой аниме лист">
+  <meta itemprop="image" content="https://github.com/Divarion-D/My-Anime-List/og.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Anime List">
+  <meta name="twitter:description" content="Показать мой аниме лист">
+  <meta name="twitter:image:src" content="https://github.com/Divarion-D/My-Anime-List/og.png">
+  <meta name="og:title" content="Anime List">
+  <meta name="og:description" content="Показать мой аниме лист">
+  <meta name="og:image" content="https://github.com/Divarion-D/My-Anime-List/og.png">
+  <meta name="og:url" content="https://github.com/Divarion-D/My-Anime-List">
+  <meta name="og:site_name" content="Anime List">
+  <meta name="og:locale" content="ru">
+  <meta name="og:type" content="website">
+  <link href="//cdn.jsdelivr.net/npm/mdui@1.0.2/dist/css/mdui.min.css" rel="stylesheet">
+  <link href="//unpkg.com/eva-icons@1.1.0/style/eva-icons.css" rel="stylesheet">
+  <link href="//fonts.googleapis.com/css?family=Product+Sans&amp;display=swap" rel="stylesheet">
+  <link href="./css/AnimeList.css?997" rel="stylesheet">
+  <meta name="theme-color" content="#e6f2fd">
+  <link rel="icon" href="./icon/icon.png">
+</head>
+
+<body class="mdui-drawer-body-left mdui-theme-primary-indigo mdui-theme-accent-indigo">
+  <header class="mdui-appbar-fixed mdui-appbar">
+    <div class="mdui-toolbar"><a class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"
+        mdui-drawer="{target: '#drawer', swipe: true}"><i class="mdui-icon material-icons">menu</i></a>
+      <div class="mdui-typo-title">My Anime List</div>
+      <div class="mdui-toolbar-spacer"></div><a class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"
+        href="https://github.com/Divarion-D/My-Anime-List" target="_blank" mdui-tooltip="{content:'Github'}"><i
+          class="mdui-icon eva eva-github-outline"></i></a>
     </div>
-    <div class="header-wrapper">
-      <div class="bg" id="hw-bg"></div>
-    </div>
-    <div class="hw-header" id="hw-header">
-      <div class="hw-title" style="line-height: normal;">{{title}}</div>
-    </div>
-    <div id="content">Loading</div>
-    <script src="./js/navigo.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/mdui@1.0.2/dist/js/mdui.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.18.0/js/md5.min.js"></script>
-    <script src="./js/index.js?301"></script>
-  </body>
+  </header>
+  <div class="mdui-drawer mdui-appbar-with-toolbar" id="drawer">
+    <ul class="mdui-list"></ul>
+  </div>
+  <div class="header-wrapper">
+    <div class="bg" id="hw-bg"></div>
+  </div>
+  <div class="hw-header" id="hw-header">
+    <div class="hw-title" style="line-height: normal;">{{title}}</div>
+  </div>
+  <div id="content">Loading</div>
+  <script src="./js/navigo.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/mdui@1.0.2/dist/js/mdui.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.18.0/js/md5.min.js"></script>
+  <script src="./js/index.js?302"></script>
+</body>
+
 </html>

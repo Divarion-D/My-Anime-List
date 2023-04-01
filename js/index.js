@@ -52,56 +52,45 @@ const router = new Navigo('/', { hash: true });
 router
     .on({
         ':type/:year': ({ data }) => {
-            loadData({
-                js: "./anime-data/" + indexData[data.year],
-                type: data.type,
-                year: data.year
-            })
+            // destructure the data object
+            const { type, year } = data;
+            // create the path to the data file
+            const jsPath = `./anime-data/${indexData[year]}`;
+            // load the data
+            loadData({ js: jsPath, type, year });
         },
         '*': ({ url }) => {
+            // show the home page
             showHome(url)
         }
     })
-    .resolve()
+    .resolve();
+// set up the drawer
 let drawer;
 $(function () {
-    if (typeof InstallTrigger !== 'undefined') $("body").addClass("firefox")
+    // check if the browser is firefox
+    if (typeof InstallTrigger !== 'undefined') $("body").addClass("firefox");
+    // append the home link to the drawer
     $("#drawer>.mdui-list").append(
         `<li class="mdui-list-item mdui-ripple" href="home" data-navigo>
-            <i class="mdui-list-item-icon mdui-icon eva eva-home-outline"></i>
-            <div class="mdui-list-item-content">Главная</div>
-        </li>`
-    )
-    for (year of Object.keys(indexData).reverse()) {
-        let html = $(
+      <i class="mdui-list-item-icon mdui-icon eva eva-home-outline"></i>
+      <div class="mdui-list-item-content">Главная</div>
+    </li>`
+    );
+    // loop through the index data and append it to the drawer
+    Object.keys(indexData).reverse().forEach(year => {
+        const html = $(
             `<li class="mdui-list-item mdui-ripple" href="info/${year}" al-month="${year}" data-navigo>
-                <i class="mdui-list-item-icon mdui-icon eva eva-archive-outline"></i>
-                <div class="mdui-list-item-content">${year}</div>
-            </li>`
-        )
-        $("#drawer>.mdui-list").append(html)
-    }
-
-    router.updatePageLinks()
-    // mdui.mutation(); //Необходимо инициализировать локальный MDUI
-    // // 手機自動收回 drawer
-    // $(`#drawer [href]`).click(function () {
-    //     if ($(window).width() < 1024) {
-    //         new mdui.Drawer("#drawer").close();
-    //         $(".mdui-overlay").click()
-    //     }
-    // });
-    // // y == null => На первой странице
-    // let u = router.lastResolved()[0].url;
-    // // get year from url
-    // let y = u.split("/")[1];
-
-    // drawer = new mdui.Collapse("#drawer>.mdui-list", { accordion: true })
-    // drawer.open(y ? `[al-month="${y}"]` : 0); //Первым выскочил он
-    // $(y ? `[href="${u}"]` : `[href="home"][data-navigo]`).addClass(activeDrawerItemClassName)
-    // // 隨機背景圖
-    hwBackground(bg[0])
-
+        <i class="mdui-list-item-icon mdui-icon eva eva-archive-outline"></i>
+        <div class="mdui-list-item-content">${year}</div>
+      </li>`
+        );
+        $("#drawer>.mdui-list").append(html);
+    });
+    // update the page links
+    router.updatePageLinks();
+    // set the background
+    hwBackground(bg[0]);
 });
 
 function hwHeader(title, subtitle, phoneSubtitle) {
@@ -151,62 +140,78 @@ function showHome(url) {
     appendRecentUpdate()
 }
 
-async function loadData({
-    js,
-    type,
-    year
-}) {
+// Function to load data based on the given parameters
+async function loadData({ js, type, year }) {
     try {
-        // 讓動畫按時間排序
+        // Load JSON and sort it based on date and time
         const sorted_anime = (await loadJson(js)).sort((a, b) => {
-            //new Date(year, month[, day[, hour[, minutes[, seconds[, milliseconds]]]]]);
             let aTime = new Date(
                 year,
                 a.date.split("/")[0], a.date.split("/")[1],
-                a.time.split(":")[0] || "23", a.time.split(":")[1] || "59" // 如果只有日期，預設 23:59，讓他排在該日期的最後面
+                a.time.split(":")[0] || "23", a.time.split(":")[1] || "59"
             );
             let bTime = new Date(
                 year,
                 b.date.split("/")[0], b.date.split("/")[1],
-                b.time.split(":")[0] || "23", b.time.split(":")[1] || "59" // 如果只有日期，預設 23:59，讓他排在該日期的最後面
+                b.time.split(":")[0] || "23", b.time.split(":")[1] || "59"
             );
-            // 如果其中一個沒日期, aTime - bTime 會是 NaN
+            // Check if the difference between the two dates is valid
             if (isNaN(aTime - bTime)) {
-                if (a.date == b.date) return 0; // aTime 跟 bTime 都是 invalid
-                if (a.date == "") return 1; // aTime invalid, bTime valid, a 要在 b 後面
-                if (b.date == "") return -1; // aTime valid, bTime invalid, a 要在 b 前面
-            } else
+                // If the dates are the same, return 0
+                if (a.date == b.date) return 0;
+                // If the first date is empty, return 1
+                if (a.date == "") return 1;
+                // If the second date is empty, return -1
+                if (b.date == "") return -1;
+            } else {
+                // Return the difference between the two dates
                 return aTime - bTime;
+            }
         });
+        // Reset the content and add the header
         $("#content").attr('class', '').html('')
         hwHeader(`${year} Год выпуска`)
+        // Return the info
         return info(sorted_anime, year)
-
     } catch (err) {
+        // If an error occurs, display an error message
         $("#content").attr('class', '').html(`<div class="mdui-typo">Отскок взорвался, пожалуйста, повторите попытку позже.<pre>Причина ошибки：\n${err}</pre></div>`)
     }
 }
 
+// Async function to load JSON data from a given URL
 async function loadJson(js) {
-    anime_data = await fetch(js).then(res => res.json())
-    return anime_data
+    let anime_data; // Variable to store the loaded JSON data
+    // Fetch the data from the given URL and parse it as JSON
+    await fetch(js).then(res => {
+        anime_data = res.json();
+    });
+    // Return the parsed JSON data
+    return anime_data;
 }
-
 function info(Anime, year) {
+    // Append the HTML elements to the #content div
     $(`#content`).append(
         `<div id="info" class="info"></div>`
-    )
+    );
     $(`#content`).append(
         `<div id="unknown">
-        <div class="mdui-typo-display-1 al-header" al-time-unknown>Время выхода в эфир неизвестно</div>
-        <div class="info" al-time-unknown></div>
+            <div class="mdui-typo-display-1 al-header" al-time-unknown>Время выхода в эфир неизвестно</div>
+            <div class="info" al-time-unknown></div>
         </div>`
-    )
+    );
+    // Iterate through the Anime array
     for (let item of Anime) {
-        let setTime = new Date((item.year || year) + "/" + item.date)
-        let animeDay = week[setTime.getDay()]; //星期
-        let release = item.date
-        if (item.date == "" || item.date.split("/")[1] == "") release = "Дата выхода неизвестна", animeDay = 'unknown'
+        // Create a new Date object using the year and date from the item
+        let setTime = new Date((item.year || year) + "/" + item.date);
+        let animeDay = week[setTime.getDay()];
+        let release = item.date;
+        // If the date is empty or only contains the month, set the release to "Дата выхода неизвестна" and the animeDay to "unknown"
+        if (item.date == "" || item.date.split("/")[1] == "") {
+            release = "Дата выхода неизвестна";
+            animeDay = 'unknown';
+        }
+        // Append the HTML element to the #info div and add a click event handler
         $(`#info`).append($(
             `<div class="card">
                 <div class="image" style="background-image:url('${item.img}')">
@@ -221,31 +226,60 @@ function info(Anime, year) {
                     <div class="description">${trimText(item.description)}</div>
                 </div>
             </div>`
-        ).click(function () { showAnimeInfoDialog(item, year) }))
+        ).click(function () { showAnimeInfoDialog(item, year) }));
     }
-    if ($("#unknown > .info > *").length == 0)
-        $(`[al-time-unknown]`).remove()
+    // If there are no elements in the #unknown > .info div, remove the al-time-unknown element
+    if ($("#unknown > .info > *").length == 0) {
+        $(`[al-time-unknown]`).remove();
+    }
 }
 
 function showAnimeInfoDialog(item, year) {
-    let release = item.date
-    if (item.season == "0") {
-        season = "OVA"
-    } else {
-        season = item.season
+    let release = item.date;
+    let season;
+    switch (item.season) {
+        case "0":
+            season = "OVA";
+            break;
+        default:
+            season = item.season;
     }
-    if (item.date.trim() === "" || !item.date) release = "Дата выхода неизвестна"
-    let displayItems = [] // Список данных о анимации
-    displayItems.push({ icon: 'insert_invitation', title: 'Дата выхода', content: release })
+    if (item.date.trim() === "" || !item.date) release = "Дата выхода неизвестна";
+    let displayItems = []; // Список данных о анимации
+    displayItems.push({
+        icon: 'insert_invitation',
+        title: 'Дата выхода',
+        content: release
+    });
     if (!item.movie) {
-        displayItems.push({ icon: 'access_time', title: 'Длительность серии', content: item.time + ' мин. ~ серия' })
-        displayItems.push({ icon: 'label', title: 'Сезон', content: season + ' (' + item.series + ' Серий)' })
+        displayItems.push({
+            icon: 'access_time',
+            title: 'Длительность серии',
+            content: `${item.time} мин. ~ серия`
+        });
+        displayItems.push({
+            icon: 'label',
+            title: 'Сезон',
+            content: `${season} (${item.series} Серий)`
+        });
     } else {
-        displayItems.push({ icon: 'access_time', title: 'Длительность', content: item.time + ' мин.' })
+        displayItems.push({
+            icon: 'access_time',
+            title: 'Длительность',
+            content: `${item.time} мин.`
+        });
     }
     if (item.carrier)
-        displayItems.push({ icon: carrierIcon[item.carrier], title: 'Тип', content: carrier[item.carrier] })
-    displayItems.push({ icon: 'info', title: 'Описание', content: item.description || 'Пока не представлено!' })
+        displayItems.push({
+            icon: carrierIcon[item.carrier],
+            title: 'Тип',
+            content: carrier[item.carrier]
+        });
+    displayItems.push({
+        icon: 'info',
+        title: 'Описание',
+        content: item.description || 'Пока не представлено!'
+    });
     let displayItemsResult = displayItems.map(({ href, title, content, icon }) =>
         `<a class="mdui-list-item mdui-ripple" ${href ? `href="${href}" target="_blank"` : ''}>
             <i class="mdui-list-item-icon mdui-icon material-icons mdui-text-color-indigo">${icon}</i>
@@ -255,7 +289,7 @@ function showAnimeInfoDialog(item, year) {
             </div>
             ${href ? `<i class="mdui-list-item-icon mdui-icon material-icons">open_in_new</i>` : ''}
         </a>`
-    ).join('')
+    ).join('');
     let animeDialogContent = `
     <div class="anime-container">
         <div class="anime-poster" style="background-image:url('${item.img}')"><img src="${item.img}"/></div>
@@ -276,32 +310,32 @@ function showAnimeInfoDialog(item, year) {
                 <button class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple" mdui-dialog-close>Закрыть</button>
             </div>
         </div>
-    </div>`
+    </div>`;
     //router.pause()
     mdui.dialog({
         //title: animeName,
         content: animeDialogContent,
-        history: navigator.userAgent.toLowerCase().indexOf('firefox') == -1, // not Firefox
-        /* buttons: [{
-             text: '關閉'
-         }],*/
-        //onClose: () => router.pause(false)
+        history: navigator.userAgent.toLowerCase().indexOf('firefox') == -1,
     });
-    mdui.mutation()
+    mdui.mutation();
 }
 
-// Text slicing up to 120 characters with an ending on the whole word
+// Function to trim text to a maximum of 120 characters
 function trimText(text) {
+    // If the text is longer than 120 characters, split it into an array of words
     if (text.length > 120) {
-        let textArr = text.split(" ")
-        let result = ""
+        let textArr = text.split(" ");
+        let result = "";
+        // Iterate through the array of words and add them to the result string until the total length of the string exceeds 120 characters
         for (let i = 0; i < textArr.length; i++) {
-            if (result.length + textArr[i].length > 120) break
-            result += textArr[i] + " "
+            if (result.length + textArr[i].length > 120) break;
+            result += textArr[i] + " ";
         }
-        return result + "..."
+        // Return the trimmed string with an ellipsis at the end
+        return result + "...";
     }
-    return text
+    // If the text is shorter than 120 characters, return it as is
+    return text;
 }
 
 /**
@@ -322,17 +356,13 @@ function trimText(text) {
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 function arrayShuffle(array) {
-
     if (!Array.isArray(array)) {
         throw new TypeError(`Expected an array, got ${typeof array}`);
     }
-
-    array = [...array];
-
-    for (let index = array.length - 1; index > 0; index--) {
-        const newIndex = Math.floor(Math.random() * (index + 1));
-        [array[index], array[newIndex]] = [array[newIndex], array[index]];
+    let arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-
-    return array;
+    return arr;
 };
