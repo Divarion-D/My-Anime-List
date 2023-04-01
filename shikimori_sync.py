@@ -3,7 +3,7 @@ import requests
 import json
 import time
 import os
-import regex as re
+import re
 
 # Shikimori API
 # https://shikimori.one/api/doc/1.0
