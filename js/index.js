@@ -32,6 +32,7 @@ const indexData = {
     2020: "anime2020.json",
     2021: "anime2021.json",
     2022: "anime2022.json",
+    2023: "anime2023.json",
 };
 const bg = arrayShuffle([
     'https://cdn.discordapp.com/attachments/439314137584107532/728258277938561056/E382ADE383BCE38393E382B8E383A5E382A2E383AB.png',
