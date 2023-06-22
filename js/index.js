@@ -20,6 +20,7 @@ const indexData = {
     2004: "anime2004.json",
     2006: "anime2006.json",
     2008: "anime2008.json",
+    2009: "anime2009.json",
     2010: "anime2010.json",
     2011: "anime2011.json",
     2012: "anime2012.json",
