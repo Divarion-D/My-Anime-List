@@ -50,7 +50,7 @@ const bg = arrayShuffle([
     'https://cdn.discordapp.com/attachments/439314137584107532/961445202109804614/FKqIc_pVUAkuvh4.jpg'
 ])
 // 路由
-const router = new Navigo('./', { hash: true });
+const router = new Navigo('/', { hash: true });
 router
     .on({
         '/': ({ url }) => {
@@ -70,7 +70,11 @@ router
             const jsPath = `./anime-data/${indexData[year]}`;
             // load the data
             loadData({ js: jsPath, type, year });
-        }
+        },
+        '*': ({ url }) => {
+            // show the home page
+            showHome(url)
+        },
     })
     .resolve();
 // set up the drawer
