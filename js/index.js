@@ -70,11 +70,7 @@ router
             const jsPath = `./anime-data/${indexData[year]}`;
             // load the data
             loadData({ js: jsPath, type, year });
-        },
-        '*': ({ url }) => {
-            // show the home page
-            showHome(url)
-        },
+        }
     })
     .resolve();
 // set up the drawer
