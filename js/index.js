@@ -53,6 +53,16 @@ const bg = arrayShuffle([
 const router = new Navigo('/', { hash: true });
 router
     .on({
+        '/': ({ url }) => {
+            // show the home page
+            showHome(url)
+        },
+        '/schedule': () => {
+            // create the path to the data file
+            const jsPath = `./anime-data/schedule.json`;
+            // load the data
+            loadData({ js: jsPath, type: 'schedule', year: '0000' });
+        },
         ':type/:year': ({ data }) => {
             // destructure the data object
             const { type, year } = data;
@@ -60,10 +70,6 @@ router
             const jsPath = `./anime-data/${indexData[year]}`;
             // load the data
             loadData({ js: jsPath, type, year });
-        },
-        '*': ({ url }) => {
-            // show the home page
-            showHome(url)
         }
     })
     .resolve();
@@ -74,9 +80,13 @@ $(function () {
     if (typeof InstallTrigger !== 'undefined') $("body").addClass("firefox");
     // append the home link to the drawer
     $("#drawer>.mdui-list").append(
-        `<li class="mdui-list-item mdui-ripple" href="home" data-navigo>
+        `<li class="mdui-list-item mdui-ripple" href="/" data-navigo>
       <i class="mdui-list-item-icon mdui-icon eva eva-home-outline"></i>
       <div class="mdui-list-item-content">Главная</div>
+    </li>
+    <li class="mdui-list-item mdui-ripple" href="schedule" data-navigo>
+      <i class="mdui-list-item-icon mdui-icon eva eva-home-outline"></i>
+      <div class="mdui-list-item-content">Запланировано</div>
     </li>`
     );
     // loop through the index data and append it to the drawer
@@ -104,6 +114,64 @@ function hwHeader(title, subtitle, phoneSubtitle) {
 
 function hwBackground(url) {
     $(`#hw-bg`).attr('style', `background-image: url("${url}")`)
+}
+
+// Function to load data based on the given parameters
+async function loadData({ js, type, year }) {
+    try {
+        // Load JSON and sort it based on date and time
+        const sorted_anime = (await loadJson(js)).sort((a, b) => {
+            let aTime = new Date(
+                year,
+                a.date.split("/")[0], a.date.split("/")[1],
+                a.time.split(":")[0] || "23", a.time.split(":")[1] || "59"
+            );
+            let bTime = new Date(
+                year,
+                b.date.split("/")[0], b.date.split("/")[1],
+                b.time.split(":")[0] || "23", b.time.split(":")[1] || "59"
+            );
+            // Check if the difference between the two dates is valid
+            if (isNaN(aTime - bTime)) {
+                // If the dates are the same, return 0
+                if (a.date == b.date) return 0;
+                // If the first date is empty, return 1
+                if (a.date == "") return 1;
+                // If the second date is empty, return -1
+                if (b.date == "") return -1;
+            } else {
+                // Return the difference between the two dates
+                return aTime - bTime;
+            }
+        });
+        // Reset the content and add the header
+        $("#content").attr('class', '').html('')
+        switch (type) {
+            case "info":
+                hwHeader(`${year} Год выпуска`)
+                return info(sorted_anime, year)
+            case "schedule":
+                hwHeader("Запланировано")
+                return schedule(sorted_anime)
+        }
+
+        // Return the info
+        return info(sorted_anime, year)
+    } catch (err) {
+        // If an error occurs, display an error message
+        $("#content").attr('class', '').html(`<div class="mdui-typo">Отскок взорвался, пожалуйста, повторите попытку позже.<pre>Причина ошибки：\n${err}</pre></div>`)
+    }
+}
+
+// Async function to load JSON data from a given URL
+async function loadJson(js) {
+    let anime_data; // Variable to store the loaded JSON data
+    // Fetch the data from the given URL and parse it as JSON
+    await fetch(js).then(res => {
+        anime_data = res.json();
+    });
+    // Return the parsed JSON data
+    return anime_data;
 }
 
 function showHome(url) {
@@ -142,55 +210,52 @@ function showHome(url) {
     appendRecentUpdate()
 }
 
-// Function to load data based on the given parameters
-async function loadData({ js, type, year }) {
-    try {
-        // Load JSON and sort it based on date and time
-        const sorted_anime = (await loadJson(js)).sort((a, b) => {
-            let aTime = new Date(
-                year,
-                a.date.split("/")[0], a.date.split("/")[1],
-                a.time.split(":")[0] || "23", a.time.split(":")[1] || "59"
-            );
-            let bTime = new Date(
-                year,
-                b.date.split("/")[0], b.date.split("/")[1],
-                b.time.split(":")[0] || "23", b.time.split(":")[1] || "59"
-            );
-            // Check if the difference between the two dates is valid
-            if (isNaN(aTime - bTime)) {
-                // If the dates are the same, return 0
-                if (a.date == b.date) return 0;
-                // If the first date is empty, return 1
-                if (a.date == "") return 1;
-                // If the second date is empty, return -1
-                if (b.date == "") return -1;
-            } else {
-                // Return the difference between the two dates
-                return aTime - bTime;
-            }
-        });
-        // Reset the content and add the header
-        $("#content").attr('class', '').html('')
-        hwHeader(`${year} Год выпуска`)
-        // Return the info
-        return info(sorted_anime, year)
-    } catch (err) {
-        // If an error occurs, display an error message
-        $("#content").attr('class', '').html(`<div class="mdui-typo">Отскок взорвался, пожалуйста, повторите попытку позже.<pre>Причина ошибки：\n${err}</pre></div>`)
+function schedule(Anime) {
+    // Append the HTML elements to the #content div
+    $(`#content`).append(
+        `<div id="info" class="info"></div>`
+    );
+    $(`#content`).append(
+        `<div id="unknown">
+            <div class="mdui-typo-display-1 al-header" al-time-unknown>Нет запланированого</div>
+            <div class="info" al-time-unknown></div>
+        </div>`
+    );
+
+    // Iterate through the Anime array
+    for (let item of Anime) {
+        // Create a new Date object using the year and date from the item
+        let setTime = new Date((item.year) + "/" + item.date);
+        let animeDay = week[setTime.getDay()];
+        let release = item.date;
+        // If the date is empty or only contains the month, set the release to "Дата выхода неизвестна" and the animeDay to "unknown"
+        if (item.date == "" || item.date.split("/")[1] == "") {
+            release = "Дата выхода неизвестна";
+            animeDay = 'unknown';
+        }
+        // Append the HTML element to the #info div and add a click event handler
+        $(`#info`).append($(
+            `<div class="card">
+                <div class="image" style="background-image:url('${item.img}')">
+                    <div class="hover-icon hover-show">
+                        <i class="mdui-icon eva eva-info-outline"></i>
+                    </div>
+                </div>
+                <div class="content">
+                    <div class="name mdui-text-color-theme mdui-typo-title">${item.name}</div>
+                    <div class="originalName">${item.originalName}</div>
+                    <div class="time">${release}</div>
+                    <div class="description">${trimText(item.description)}</div>
+                </div>
+            </div>`
+        ).click(function () { showAnimeInfoDialog(item) }));
+    }
+    // If there are no elements in the #unknown > .info div, remove the al-time-unknown element
+    if ($("#unknown > .info > *").length == 0) {
+        $(`[al-time-unknown]`).remove();
     }
 }
 
-// Async function to load JSON data from a given URL
-async function loadJson(js) {
-    let anime_data; // Variable to store the loaded JSON data
-    // Fetch the data from the given URL and parse it as JSON
-    await fetch(js).then(res => {
-        anime_data = res.json();
-    });
-    // Return the parsed JSON data
-    return anime_data;
-}
 function info(Anime, year) {
     // Append the HTML elements to the #content div
     $(`#content`).append(
@@ -228,7 +293,7 @@ function info(Anime, year) {
                     <div class="description">${trimText(item.description)}</div>
                 </div>
             </div>`
-        ).click(function () { showAnimeInfoDialog(item, year) }));
+        ).click(function () { showAnimeInfoDialog(item) }));
     }
     // If there are no elements in the #unknown > .info div, remove the al-time-unknown element
     if ($("#unknown > .info > *").length == 0) {
@@ -236,7 +301,7 @@ function info(Anime, year) {
     }
 }
 
-function showAnimeInfoDialog(item, year) {
+function showAnimeInfoDialog(item) {
     let release = item.date;
     let season;
     switch (item.season) {
@@ -261,8 +326,8 @@ function showAnimeInfoDialog(item, year) {
         });
         displayItems.push({
             icon: 'label',
-            title: 'Сезон',
-            content: `${season} (${item.series} Серий)`
+            title: 'Серий в сезоне',
+            content: `${item.series} Серий`
         });
     } else {
         displayItems.push({
