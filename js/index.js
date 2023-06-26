@@ -50,13 +50,21 @@ const bg = arrayShuffle([
     'https://cdn.discordapp.com/attachments/439314137584107532/961445202109804614/FKqIc_pVUAkuvh4.jpg'
 ])
 // 路由
-const router = new Navigo('/', { hash: true });
+const router = new Navigo('/', { hash: true, strategy: 'ONE' });
+router
+    .hooks({
+        before: (done, params) => {
+            $("#content").attr('class', '').html('')
+            $("#drawer>.mdui-list *").removeClass(activeDrawerItemClassName)
+            // $(`[href="155565465"]`).addClass(activeDrawerItemClassName)
+            done()
+        },
+        after: params => {
+            $('html, body').scrollTop(0)
+        }
+    })
 router
     .on({
-        '/': ({ url }) => {
-            // show the home page
-            showHome(url)
-        },
         '/schedule': () => {
             // create the path to the data file
             const jsPath = `./anime-data/schedule.json`;
