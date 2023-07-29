@@ -67,7 +67,7 @@ router
     .on({
         '/schedule': () => {
             // create the path to the data file
-            const jsPath = `./anime-data/schedule.json?nocache=` + (new Date()).getTime();
+            const jsPath = `./anime-data/schedule.json?time=` + (new Date()).getTime();
             // load the data
             loadData({ js: jsPath, type: 'schedule', year: '0000' });
         },
@@ -75,7 +75,7 @@ router
             // destructure the data object
             const { type, year } = data;
             // create the path to the data file
-            const jsPath = `./anime-data/${indexData[year]}?nocache=` + (new Date()).getTime();
+            const jsPath = `./anime-data/${indexData[year]}?time=` + (new Date()).getTime();
             // load the data
             loadData({ js: jsPath, type, year });
         },

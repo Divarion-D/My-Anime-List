@@ -70,8 +70,8 @@ def WatchAnime(data):
 
 def Schuduled(data):
     # remove sheduled.json
-    if os.path.exists(f'anime-data/schedule.json'):
-        os.remove(f'anime-data/schedule.json')
+    if os.path.exists('anime-data/schedule.json'):
+        os.remove('anime-data/schedule.json')
 
     for i in data:
         anime = requests.get(f"https://shikimori.one/api/animes/{i.get('anime').get('id')}", headers=HEADER)
@@ -105,8 +105,8 @@ def Schuduled(data):
                 "description": desc,
             }
 
-        if os.path.exists(f'anime-data/schedule.json'): 
-            with open(f'anime-data/schedule.json', 'r') as f:
+        if os.path.exists('anime-data/schedule.json'): 
+            with open('anime-data/schedule.json', 'r') as f:
                 anime_data = json.load(f)
 
                 # check if anime already exists
@@ -114,12 +114,12 @@ def Schuduled(data):
                     anime_data.append(data)
                     # sort by date
                     anime_data = sorted(anime_data, key=lambda k: k['date'], reverse=True)
-                    with open(f'anime-data/schedule.json', 'w') as f:
+                    with open('anime-data/schedule.json', 'w') as f:
                         json.dump(anime_data, f, indent=4, ensure_ascii=False)
                         f.close()
         else:
             data_json = [data]
-            with open(f'anime-data/schedule.json', 'w') as f:
+            with open('anime-data/schedule.json', 'w') as f:
                 json.dump(data_json, f, indent=4, ensure_ascii=False)
                 f.close()
 
