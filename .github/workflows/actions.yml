@@ -2,7 +2,7 @@ name: run shikimori_sync.py
 
 on:
   schedule:
-    - cron: '0 0 * * 1' 
+    - cron: '* * * * *' 
 jobs:
   build:
     runs-on: ubuntu-latest
