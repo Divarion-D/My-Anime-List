@@ -9,12 +9,16 @@ import requests
 # https://shikimori.one/api/doc/1.0
 
 USERNAME = "Divarion_D"
+HEADER = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+}
 
 
 def WatchAnime(data):
     for i in data:
         anime = requests.get(
-            f"https://shikimori.one/api/animes/{i.get('anime').get('id')}"
+            f"https://shikimori.one/api/animes/{i.get('anime').get('id')}",
+            headers=HEADER,
         )
         anime = json.loads(anime.text)
         desc = "" if anime.get("description") is None else anime.get("description")
@@ -76,7 +80,8 @@ def Schuduled(data):
 
     for i in data:
         anime = requests.get(
-            f"https://shikimori.one/api/animes/{i.get('anime').get('id')}"
+            f"https://shikimori.one/api/animes/{i.get('anime').get('id')}",
+            headers=HEADER,
         )
         anime = json.loads(anime.text)
         desc = "" if anime.get("description") is None else anime.get("description")
@@ -131,13 +136,15 @@ def Schuduled(data):
 
 if __name__ == "__main__":
     data = requests.get(
-        f"https://shikimori.one/api/users/{USERNAME}/anime_rates?limit=1000000000&status=completed"
+        f"https://shikimori.one/api/users/{USERNAME}/anime_rates?limit=1000000000&status=completed",
+        headers=HEADER,
     )
     data = json.loads(data.text)
     WatchAnime(data)
 
     data = requests.get(
-        f"https://shikimori.one/api/users/{USERNAME}/anime_rates?limit=1000000000&status=planned"
+        f"https://shikimori.one/api/users/{USERNAME}/anime_rates?limit=1000000000&status=planned",
+        headers=HEADER,
     )
     data = json.loads(data.text)
     Schuduled(data)
