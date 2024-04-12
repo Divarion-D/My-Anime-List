@@ -10,7 +10,8 @@ import requests
 
 USERNAME = "Divarion_D"
 HEADER = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    'X-User-Nickname': USERNAME,
+    'User-Agent': 'PyShiki'
 }
 
 
