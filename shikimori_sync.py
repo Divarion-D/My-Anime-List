@@ -11,7 +11,7 @@ import requests
 USERNAME = "Divarion_D"
 HEADER = {
     'X-User-Nickname': USERNAME,
-    'User-Agent': 'PyShiki'
+    'User-Agent': USERNAME
 }
 
 
