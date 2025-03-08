@@ -38,6 +38,91 @@ def WriteDB(file_path, data):
         print(f"Ошибка записи в файл {file_path}: {str(e)}")
 
 
+def GetAnimeInfo(id):
+    """Получает информацию об аниме по его ID."""
+    headers = {
+        "User-Agent": "MyApp/1.0 (contact@example.com)",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Connection": "keep-alive",
+        "DNT": "1",
+        "Origin": "https://shikimori.one",
+    }
+
+    # Исправленный GraphQL-запрос
+    query = """
+    {
+    animes(ids: "$id", limit: 1) {
+        id
+        name
+        russian
+        kind
+        rating
+        score
+        status
+        episodes
+        duration
+        airedOn { year month day date }
+        poster {originalUrl}
+
+        videos {url name}
+        screenshots {originalUrl x166Url x332Url}
+
+        description
+        descriptionHtml
+    }
+    }
+    """.replace(
+        "$id", str(id)
+    )
+
+    try:
+        response = requests.post(
+            "https://shikimori.one/api/graphql", json={"query": query}, headers=headers
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get("data", {}).get("animes"):
+            return data["data"]["animes"][0]
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+    except KeyError as e:
+        print(f"Data parsing error: {e}")
+
+
+def download_image(url, save_path=None):
+    """
+    Скачивает изображение по URL
+    :param url: Ссылка на изображение
+    :param save_path: Путь для сохранения (если не указан - используется имя файла из URL)
+    :return: Путь к сохраненному файлу
+    """
+    try:
+        # Отправляем GET-запрос
+        response = requests.get(url, headers=HEADER, stream=True)
+        response.raise_for_status()
+
+        # Определяем имя файла
+        if not save_path:
+            filename = os.path.basename(url)
+            save_path = os.path.join(os.getcwd(), filename)
+
+        # Сохраняем изображение
+        with open(save_path, "wb") as file:
+            for chunk in response.iter_content(1024):
+                file.write(chunk)
+
+        print(f"Изображение сохранено: {save_path}")
+        return save_path
+
+    except Exception as e:
+        print(f"Ошибка загрузки: {str(e)}")
+        return None
+
+
 def WatchAnime(data):
     # Собираем все существующие ID из всех годовых файлов
     existing_ids = set()
@@ -58,41 +143,47 @@ def WatchAnime(data):
             continue
 
         # Делаем запрос только для новых аниме
-        anime = requests.get(
-            f"https://shikimori.one/api/animes/{anime_id}",
-            headers=HEADER,
-        ).json()
+        anime = GetAnimeInfo(anime_id)
 
-        # Обработка описания
-        desc = "" if anime.get("description") is None else anime.get("description")
+        year = anime["airedOn"]["year"]
+        desc = "" if anime["description"] is None else anime["description"]
         desc = re.sub(r"\[.*?\]", "", desc)  # remove [*] from description
-        date = anime.get("aired_on", "")
-        year = date[:4] if date else "unknown"
+
+        while True:
+            try:
+                img = download_image(
+                    anime["poster"]["originalUrl"], f"anime-data/img/{anime_id}.jpg"
+                )
+                break
+            except Exception as e:
+                print(f"Error downloading image for anime {anime_id}: {e}")
+                time.sleep(5)  # wait 5 seconds before retrying
 
         # Формируем запись
         entry = {
             "id": anime_id,
-            "name": anime.get("russian"),
-            "originalName": anime.get("name"),
-            "date": date,
-            "img": f"https://shikimori.one{anime.get('image').get('original')}",
+            "name": anime["russian"],
+            "originalName": anime["name"],
+            "date": anime["airedOn"]["date"],
+            "img": img,
             "description": desc,
         }
 
         # Добавляем специфичные поля
-        if anime.get("kind") == "movie":
-            time_m = time.strftime(
-                "%H:%M:%S", time.gmtime(anime.get("duration", 0) * 60)
-            )
+        if anime["kind"] == "movie":
+            time_m = time.strftime("%H:%M:%S", time.gmtime(anime["duration"] * 60))
             entry.update({"time": time_m, "movie": "1"})
         else:
-            entry.update(
-                {"time": str(anime.get("duration")), "series": anime.get("episodes")}
-            )
+            entry.update({"time": str(anime["duration"]), "series": anime["episodes"]})
 
         new_data[year].append(entry)
         print(f"Added anime with ID {anime_id}")
         existing_ids.add(anime_id)  # Запоминаем обработанные ID
+
+        # delete in shedschedule
+        shed_data = ReadDB("anime-data/schedule.json")
+        shed_data = [item for item in shed_data if item["id"] != anime_id]
+        WriteDB("anime-data/schedule.json", shed_data)
 
     # Сохраняем новые данные по годам
     for year, entries in new_data.items():
@@ -134,36 +225,37 @@ def Schuduled(data):
             print(f"Skipping duplicate anime ID: {anime_id}")
             continue
 
-        # Fetch anime details
-        anime_response = requests.get(
-            f"https://shikimori.one/api/animes/{anime_id}",
-            headers=HEADER,
-        )
-        anime = anime_response.json()
+        anime = GetAnimeInfo(anime_id)
 
-        # Process description
-        desc = "" if anime.get("description") is None else anime.get("description")
+        desc = "" if anime["description"] is None else anime["description"]
         desc = re.sub(r"\[.*?\]", "", desc)  # remove [*] from description
+
+        while True:
+            try:
+                img = download_image(
+                    anime["poster"]["originalUrl"], f"anime-data/img/{anime_id}.jpg"
+                )
+                break
+            except Exception as e:
+                print(f"Error downloading image for anime {anime_id}: {e}")
+                time.sleep(5)  # wait 5 seconds before retrying
 
         # Prepare data entry
         entry = {
             "id": anime_id,
-            "name": anime.get("russian"),
-            "originalName": anime.get("name"),
-            "date": anime.get("aired_on"),
-            "img": f"https://shikimori.one{anime.get('image').get('original')}",
+            "name": anime["russian"],
+            "originalName": anime["name"],
+            "date": anime["airedOn"]["date"],
+            "img": img,
             "description": desc,
         }
 
         # Add type-specific fields
-        if anime.get("kind") == "movie":
-            time_res = time.gmtime(anime.get("duration", 0) * 60)
-            entry.update({"time": time.strftime("%H:%M:%S", time_res), "movie": "1"})
+        if anime["kind"] == "movie":
+            time_m = time.strftime("%H:%M:%S", time.gmtime(anime["duration"] * 60))
+            entry.update({"time": time_m, "movie": "1"})
         else:
-            entry.update(
-                {"time": str(anime.get("duration")), "series": anime.get("episodes")}
-            )
-
+            entry.update({"time": str(anime["duration"]), "series": anime["episodes"]})
         new_entries.append(entry)
         print(f"Added new anime entry: {anime_id}")
         existing_ids.add(anime_id)  # Prevent duplicates in current session
