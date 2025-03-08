@@ -2,6 +2,8 @@ import json
 import os
 import re
 import time
+import glob
+from collections import defaultdict
 
 import requests
 
@@ -9,130 +11,171 @@ import requests
 # https://shikimori.one/api/doc/1.0
 
 USERNAME = "Divarion_D"
-HEADER = {
-    'X-User-Nickname': USERNAME,
-    'User-Agent': USERNAME
-}
+HEADER = {"X-User-Nickname": USERNAME, "User-Agent": USERNAME}
+
+
+def ReadDB(file_path):
+    """Читает JSON файл и возвращает данные. Возвращает пустой список при ошибках."""
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []  # Возвращаем пустой список если файла нет
+    except json.JSONDecodeError:
+        print(f"Ошибка чтения файла {file_path}. Файл будет пересоздан.")
+        return []
+    except Exception as e:
+        print(f"Неизвестная ошибка при чтении {file_path}: {str(e)}")
+        return []
+
+
+def WriteDB(file_path, data):
+    """Сохраняет данные в JSON файл с автоматическим созданием директорий."""
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Ошибка записи в файл {file_path}: {str(e)}")
 
 
 def WatchAnime(data):
-    for i in data:
+    # Собираем все существующие ID из всех годовых файлов
+    existing_ids = set()
+    year_files = glob.glob("anime-data/anime*.json")
+
+    for file_path in year_files:
+        year_data = ReadDB(file_path)
+        existing_ids.update({item["id"] for item in year_data})
+
+    new_data = defaultdict(list)
+
+    for item in data:
+        anime_id = item.get("anime").get("id")
+
+        # Пропускаем уже существующие аниме
+        if anime_id in existing_ids:
+            print(f"Anime with ID {anime_id} already exists. Skipping.")
+            continue
+
+        # Делаем запрос только для новых аниме
         anime = requests.get(
-            f"https://shikimori.one/api/animes/{i.get('anime').get('id')}",
+            f"https://shikimori.one/api/animes/{anime_id}",
             headers=HEADER,
-        )
-        anime = json.loads(anime.text)
+        ).json()
+
+        # Обработка описания
         desc = "" if anime.get("description") is None else anime.get("description")
-        # remove [*] from description
-        desc = re.sub(r"\[.*?\]", "", desc)
+        desc = re.sub(r"\[.*?\]", "", desc)  # remove [*] from description
+        date = anime.get("aired_on", "")
+        year = date[:4] if date else "unknown"
 
+        # Формируем запись
+        entry = {
+            "id": anime_id,
+            "name": anime.get("russian"),
+            "originalName": anime.get("name"),
+            "date": date,
+            "img": f"https://shikimori.one{anime.get('image').get('original')}",
+            "description": desc,
+        }
+
+        # Добавляем специфичные поля
         if anime.get("kind") == "movie":
-            ty_res = time.gmtime(anime.get("duration") * 60)
-            time_m = time.strftime("%H:%M:%S", ty_res)
-            data = {
-                "id": anime.get("id"),
-                "name": anime.get("russian"),
-                "originalName": anime.get("name"),
-                "date": anime.get("aired_on"),
-                "time": str(time_m),
-                "movie": "1",
-                "img": f"https://shikimori.one{anime.get('image').get('original')}",
-                "description": desc,
-            }
+            time_m = time.strftime(
+                "%H:%M:%S", time.gmtime(anime.get("duration", 0) * 60)
+            )
+            entry.update({"time": time_m, "movie": "1"})
         else:
-            data = {
-                "id": anime.get("id"),
-                "name": anime.get("russian"),
-                "originalName": anime.get("name"),
-                "date": anime.get("aired_on"),
-                "time": str(anime.get("duration")),
-                "series": anime.get("episodes"),
-                "img": f"https://shikimori.one{anime.get('image').get('original')}",
-                "description": desc,
-            }
+            entry.update(
+                {"time": str(anime.get("duration")), "series": anime.get("episodes")}
+            )
 
-        year = data["date"][:4]
+        new_data[year].append(entry)
+        print(f"Added anime with ID {anime_id}")
+        existing_ids.add(anime_id)  # Запоминаем обработанные ID
 
-        if os.path.exists(f"anime-data/anime{year}.json"):
-            with open(f"anime-data/anime{year}.json", "r") as f:
-                anime_data = json.load(f)
+    # Сохраняем новые данные по годам
+    for year, entries in new_data.items():
+        filename = f"anime-data/anime{year}.json"
 
-                # check if anime already exists
-                if data.get("id") not in [i.get("id") for i in anime_data]:
-                    anime_data.append(data)
-                    # sort by date
-                    anime_data = sorted(
-                        anime_data, key=lambda k: k["date"], reverse=True
-                    )
-                    with open(f"anime-data/anime{year}.json", "w") as f:
-                        json.dump(anime_data, f, indent=4, ensure_ascii=False)
-                        f.close()
+        # Загружаем существующие данные для года
+        if os.path.exists(filename):
+            year_entries = ReadDB(filename)
+            existing_ids_year = {item["id"] for item in year_entries}
         else:
-            data_json = [data]
-            with open(f"anime-data/anime{year}.json", "w") as f:
-                json.dump(data_json, f, indent=4, ensure_ascii=False)
-                f.close()
+            year_entries = []
+            existing_ids_year = set()
+
+        # Фильтруем уже существующие записи (на случай дубликатов в data)
+        filtered_entries = [
+            entry for entry in entries if entry["id"] not in existing_ids_year
+        ]
+
+        if filtered_entries:
+            # Объединяем и сортируем
+            combined = year_entries + filtered_entries
+            combined.sort(key=lambda x: x.get("date") or "", reverse=True)
+
+            # Сохраняем обновленные данные
+            WriteDB(filename, combined)
 
 
 def Schuduled(data):
-    # remove sheduled.json
-    if os.path.exists("anime-data/schedule.json"):
-        os.remove("anime-data/schedule.json")
+    existing_data = ReadDB("anime-data/schedule.json")
+    existing_ids = {item["id"] for item in existing_data}
 
-    for i in data:
-        anime = requests.get(
-            f"https://shikimori.one/api/animes/{i.get('anime').get('id')}",
+    new_entries = []
+
+    for item in data:
+        anime_id = item.get("anime").get("id")
+
+        # Skip if already exists
+        if anime_id in existing_ids:
+            print(f"Skipping duplicate anime ID: {anime_id}")
+            continue
+
+        # Fetch anime details
+        anime_response = requests.get(
+            f"https://shikimori.one/api/animes/{anime_id}",
             headers=HEADER,
         )
-        anime = json.loads(anime.text)
+        anime = anime_response.json()
+
+        # Process description
         desc = "" if anime.get("description") is None else anime.get("description")
-        # remove [*] from description
-        desc = re.sub(r"\[.*?\]", "", desc)
+        desc = re.sub(r"\[.*?\]", "", desc)  # remove [*] from description
 
+        # Prepare data entry
+        entry = {
+            "id": anime_id,
+            "name": anime.get("russian"),
+            "originalName": anime.get("name"),
+            "date": anime.get("aired_on"),
+            "img": f"https://shikimori.one{anime.get('image').get('original')}",
+            "description": desc,
+        }
+
+        # Add type-specific fields
         if anime.get("kind") == "movie":
-            ty_res = time.gmtime(anime.get("duration") * 60)
-            time_m = time.strftime("%H:%M:%S", ty_res)
-            data = {
-                "id": anime.get("id"),
-                "name": anime.get("russian"),
-                "originalName": anime.get("name"),
-                "date": anime.get("aired_on"),
-                "time": str(time_m),
-                "movie": "1",
-                "img": f"https://shikimori.one{anime.get('image').get('original')}",
-                "description": desc,
-            }
+            time_res = time.gmtime(anime.get("duration", 0) * 60)
+            entry.update({"time": time.strftime("%H:%M:%S", time_res), "movie": "1"})
         else:
-            data = {
-                "id": anime.get("id"),
-                "name": anime.get("russian"),
-                "originalName": anime.get("name"),
-                "date": anime.get("aired_on"),
-                "time": str(anime.get("duration")),
-                "series": anime.get("episodes"),
-                "img": f"https://shikimori.one{anime.get('image').get('original')}",
-                "description": desc,
-            }
+            entry.update(
+                {"time": str(anime.get("duration")), "series": anime.get("episodes")}
+            )
 
-        if os.path.exists("anime-data/schedule.json"):
-            with open("anime-data/schedule.json", "r") as f:
-                anime_data = json.load(f)
+        new_entries.append(entry)
+        print(f"Added new anime entry: {anime_id}")
+        existing_ids.add(anime_id)  # Prevent duplicates in current session
 
-                # check if anime already exists
-                if data.get("id") not in [i.get("id") for i in anime_data]:
-                    anime_data.append(data)
-                    # sort by date
-                    anime_data = sorted(
-                        anime_data, key=lambda k: k["date"], reverse=True
-                    )
-                    with open("anime-data/schedule.json", "w") as f:
-                        json.dump(anime_data, f, indent=4, ensure_ascii=False)
-                        f.close()
-        else:
-            data_json = [data]
-            with open("anime-data/schedule.json", "w") as f:
-                json.dump(data_json, f, indent=4, ensure_ascii=False)
-                f.close()
+    # Merge and sort data
+    if new_entries:
+        combined_data = existing_data + new_entries
+        # Sort by date in reverse chronological order
+        combined_data.sort(key=lambda x: x["date"] or "", reverse=True)
+
+        # Save updated data
+        WriteDB("anime-data/schedule.json", combined_data)
 
 
 if __name__ == "__main__":

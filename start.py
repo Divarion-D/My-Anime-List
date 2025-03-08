@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Старт Web сервера для просмотра сайта
-from http import server # Python 3
+from http import server  # Python 3
+
 
 class MyHTTPRequestHandler(server.SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -12,5 +13,6 @@ class MyHTTPRequestHandler(server.SimpleHTTPRequestHandler):
         self.send_header("Pragma", "no-cache")
         self.send_header("Expires", "0")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     server.test(HandlerClass=MyHTTPRequestHandler)
