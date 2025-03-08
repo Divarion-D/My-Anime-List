@@ -197,7 +197,7 @@ function showHome(url) {
         );
         $(`#content`).append(
             `<div id="unknown">
-                <div class="mdui-typo-display-1 al-header" al-time-unknown>Нет запланированого</div>
+                <div class="mdui-typo-display-1 al-header" al-time-unknown>Нет просмотреных</div>
                 <div class="info" al-time-unknown></div>
             </div>`
         );
@@ -208,8 +208,6 @@ function showHome(url) {
 
             for (const year of allYears) {
                 const animeList = await loadJson("./anime-data/" + indexData[year]);
-                
-
                 for (let anime of animeList) {
                     let release = anime.date;
                     // If the date is empty or only contains the month, set the release to "Дата выхода неизвестна" and the animeDay to "unknown"
@@ -234,6 +232,9 @@ function showHome(url) {
                         </div>`
                     ).click(function () { showAnimeInfoDialog(anime) }));
                 }
+            }
+            if ($("#unknown > .info > *").length == 0) {
+                $(`[al-time-unknown]`).remove();
             }
         } catch (error) {
             console.error("Ошибка загрузки данных:", error);
