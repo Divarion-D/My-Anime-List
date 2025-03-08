@@ -188,39 +188,66 @@ async function loadJson(js) {
 }
 
 function showHome(url) {
-    $("#drawer>.mdui-list *").removeClass(activeDrawerItemClassName)
-    $(`[href="${url}"]`).addClass(activeDrawerItemClassName)
+    $("#drawer>.mdui-list *").removeClass(activeDrawerItemClassName);
+    $(`[href="${url}"]`).addClass(activeDrawerItemClassName);
 
-    async function appendRecentUpdate() {
-        let count = 0
-        loop: for (year of Object.keys(indexData).reverse()) {
-            const y = year;
-            if (++count > 12) break loop;
-            const bgImg = arrayShuffle((await loadJson("./anime-data/" + indexData[y])).map(i => i.img))[0]
-            $('#content .recent-update').append(
-                $(
-                    `<a class="card" title="${y} Год" href="info/${y}" data-navigo>
-                    <div class="image" style="background-image:url('${bgImg}')">
-                        <div class="hover-icon hover-show">
-                            <i class="mdui-icon eva eva-arrow-ios-forward-outline"></i>
-                        </div>
-                    </div>
-                    <div class="content">
-                        <div class="originalName">${y} Год</div>
-                    </div>
-                </a>`
-                ).click(function () {
-                    drawer.open(`[al-month="${y}"]`);
-                })
-            )
+    async function appendAllAnime() {
+        $(`#content`).append(
+            `<div id="info" class="info"></div>`
+        );
+        $(`#content`).append(
+            `<div id="unknown">
+                <div class="mdui-typo-display-1 al-header" al-time-unknown>Нет запланированого</div>
+                <div class="info" al-time-unknown></div>
+            </div>`
+        );
+
+        try {
+            const allYears = Object.keys(indexData).reverse();
+            let loadedCount = 0;
+
+            for (const year of allYears) {
+                const animeList = await loadJson("./anime-data/" + indexData[year]);
+                
+
+                for (let anime of animeList) {
+                    let release = anime.date;
+                    // If the date is empty or only contains the month, set the release to "Дата выхода неизвестна" and the animeDay to "unknown"
+                    if (anime.date == "" || anime.date.split("/")[1] == "") {
+                        release = "Дата выхода неизвестна";
+                        animeDay = 'unknown';
+                    }
+                    // Создаем карточки для каждого аниме
+                    $(`#info`).append($(
+                        `<div class="card">
+                            <div class="image" style="background-image:url('${anime.img}')">
+                                <div class="hover-icon hover-show">
+                                    <i class="mdui-icon eva eva-info-outline"></i>
+                                </div>
+                            </div>
+                            <div class="content">
+                                <div class="name mdui-text-color-theme mdui-typo-title">${anime.name}</div>
+                                <div class="originalName">${anime.originalName}</div>
+                                <div class="time">${release}</div>
+                                <div class="description">${trimText(anime.description)}</div>
+                            </div>
+                        </div>`
+                    ).click(function () { showAnimeInfoDialog(anime) }));
+                }
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки данных:", error);
+            mdui.snackbar("Ошибка загрузки данных. Попробуйте обновить страницу.");
+        } finally {
+            router.updatePageLinks();
         }
-        router.updatePageLinks()
     }
+
     hwHeader("Главная страница")
     $("#content").html(
         `<div class="recent-update"></div>`
     )
-    appendRecentUpdate()
+    appendAllAnime()
 }
 
 function schedule(Anime) {
