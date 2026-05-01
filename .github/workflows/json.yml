@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Check json valid
-      working-directory: ./anime-data
+      working-directory: ./data/anime
       run: |
         for file in *.json
         do
